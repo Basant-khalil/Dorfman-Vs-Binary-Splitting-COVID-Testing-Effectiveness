@@ -90,10 +90,10 @@ Results of Individual and Dorfman testing strategy simulation is the following g
 Note: y axis are in $172 unit. For example, 100000 means a economics cost of  $17200000.
 
 Q1-d figure 1  
-<img src="images/1.d-1.png"  width="400" height="280"> 
+<img src="1.d-1.png"  width="400" height="280"> 
 
 Q1-d figure 2  
-<img src="images/1.d-2.png"  width="400" height="280">  
+<img src="1.d-2.png"  width="400" height="280">  
 Based on the x and y axis on the same scale, we can easy see that the total economic cost for individual testing is a lot more than Dorfman testing.  
 For individual testing, the cost are steadily around 600000 * $172 and slowly increasing as p increase, but both around 610000 * $172 for p = 0.002 and p = 0.02. For Dorfman testing, the cost ranges quite large, from a cost around 40000 * $172 with small p of 0.002, and around 550000 * $172 with a bigger p of 0.02.  
 Individual test's economic cost is robust to change in p but with high average cost compare to Dorfman testing. Dorfman have extremely low cost when p is small but losses the huge advantage after p increase compare to individual testing. However, in this range of p [0.002,0.02], Dorfman still always have a smaller economic cost than individual testing.
