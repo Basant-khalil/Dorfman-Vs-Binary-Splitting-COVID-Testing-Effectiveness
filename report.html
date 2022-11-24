@@ -1,0 +1,846 @@
+<h2 id="ece-3100-final-report">ECE 3100 Final Report</h2>
+<h1 id="group-testing-for-covid-19-screening">Group Testing for COVID-19 Screening</h1>
+<h3 id="student-basant-khalil-bak94-emerald-liu-sl2322-">Student: Basant Khalil (bak94), Emerald Liu (sl2322)</h3>
+<h2 id="part-i-dorfman-testing-strategy">Part I: Dorfman Testing Strategy</h2>
+<p>Note: see appendix for code</p>
+<h2 id="1a-">1a)</h2>
+<p>p - infection rate<br>n - group size<br>Dn - number of tests to identify all infected person in group of n<br>Denote event A be everyone in the group are not infected.
+Denote event D be the number of tests needed to identify all infected person.<br>E[Dn] = P(D|A) <em> P(A) + P(D| A<sup>c</sup>) </em> P(A<sup>c</sup>), by total expected theorem<br>= 1 <em> (1-p)<sup>n</sup> + n </em> (1-(1-p)<sup>n</sup>)<br>= n + (1-n) * (1-p)<sup>n</sup>  </p>
+<p>E[Dn] and p relationship:
+Q1-a figure 1<br><img src="1.a-1.png"  width="400" height="280"><br>As p increases, E[Dn] increases greatly. This is because as p increases, the chance of being negative decrease and the chance of having everyone in one group to be not infected decreases. Thus taking longer to test out all the infected people.</p>
+<p>E[Dn] and n relationship:
+Q1-a figure 2<br><img src="1.a-2.png"  width="400" height="280"><br>As n increases, E[Dn] also increases. This is because as n increases, the chance of having everyone in one group to be not infected decreases. Thus taking longer to test out all the infected people.</p>
+<h2 id="1b-">1b)</h2>
+<p>How infection rate p affects the optimal group size n∗: Q1-b figure 1<br><img src="1.b-1.png"  width="400" height="280"><br>As p increases, n<em> decreases. This is because as p increases, the probability of a group of n people being all not infected decrease. So the benefits of Dorfman testing decrease, and max of the expected number of persons cleared per test under the Dorfman testing strategy with a group size n, n</em>, decrease.</p>
+<h2 id="1c-">1c)</h2>
+<p>Plot: The average number (averaged over 1000 independent runs of the experiment) of tests needed to clear the entire population as a function of p: Q1-c figure 1<br><img src="1.c-1.png"  width="400" height="280"><br>As p increases, the average number of tests needed to clear all people with Dorfman testing increases, so the reduction of test becomes less.</p>
+<p>Plot: The ratio of the number of tests needed under the Dorfman testing strategy over that required by the individual testing strategy as a function of p: Q1-c figure 2<br><img src="1.c-2.png"  width="400" height="280"><br>In addition to the fact that an increase in p weakens the reduction of test for Dorfman. Since the individual testing strategy always needed n tests to clear out n people, for population N = 10000, it always need 10000 test, p has no effect on the efficiency of individual testing. Therefore the ratio between Dorfman and individual testing is just Dorfman/10000, and the pattern or shape of the graph does not change.<br>In conclusion, the as the infection rate p increase, reduction in tests of the Dorfman strategy over the individual testing strategy decrease.</p>
+<h2 id="1d-">1d)</h2>
+<p>Goal - Minimize social/economic cost<br>Assumptions:  </p>
+<ul>
+<li>Start on day 1, continue for 3 months, assume 30 days in each month, so day ranges in [1,90].   </li>
+<li>On day 1, everyone have probability p of being infected.  </li>
+<li>Every person needs a test after 7 days.  </li>
+<li>Every person not being to work (due to test limitation or was sick) results in a lose of $172 dollars per day.  </li>
+<li>We are not going to care about which person gets the test and which do not, given they are both eligible for a test, because there is no difference in the economic cost between them. (This means that a person who didn&#39;t get a test for 30 days have the same testing priority as a person who didn&#39;t get a test for 1 day.)  </li>
+</ul>
+<p><strong>Individual Testing:</strong></p>
+<ol>
+<li><p>Testing strategy<br>All tests should be used in a day.<br>Give tests to individual when they need a new test to go to work. Need is satisfied by healthy (or seemingly healthy) people, who was tested healthy last time 7 or more days ago, and recovered sick people who was infected 21 or more days ago.  </p>
+</li>
+<li><p>Reasoning<br>Since the population is 10000 and everyone need a new test every 7 days, so we need to do at least 70000 tests a week to keep everyone a valid test. However, our daily available test is just 500, so 7 * 500 = 3500 tests weekly. This is very far from the 70000 tests that&#39;s needed. Therefore, our main goal is just to use as many tests as possible in order to minimize the cost, which means we give test to people that would not be able to work without a negative test and would be able to work with a negative test.  </p>
+</li>
+<li><p>Basic steps of code:<br>Initialize the first day sick/healthy situation.
+For each day, calculate the economic cost for people who cannot work. then update the people list to simulate people getting sick, then do tests for 500 people who need test. Continue this process until day 90.</p>
+</li>
+</ol>
+<p><strong>Dorfman Testing:</strong></p>
+<ul>
+<li><p>Testing strategy<br>Almost all tests should be used in a day.<br>Give tests to a group of n_star people who need a new test to go to work. Need is satisfied by healthy (or seemingly healthy) people, who was tested healthy last time 7 or more days ago, and recovered sick people who was infected 21 or more days ago. Then if there are extra tests after providing everyone that immediately need a test, start giving tests to people with the nearest needing test date.</p>
+</li>
+<li><p>Reasoning<br>Since Dorfman testing is very efficient in finding infected people or clearing healthy people when p is small, we expect that some day Dorfman will provide enough test for everyone. In this case, we start giving people more tests in advance so people don&#39;t have to wait till the last day to get a test. In our simulation we chose to give tests to people 1 or 2 days in advance and 3 or 4 days in advance. This is a choice that is reasonable because we testing too much in advance is not necessary and around half a week in advance is a reasonable cutoff.</p>
+</li>
+<li><p>Basic steps of code<br>Initialize day 0 sick/healthy situation in population.<br>For given p, find the n_star group in the population with the Dorfman method.<br>For each day, start testing people in need of tests in a group of n_star people. If the remaining available test in a day is less then n_star + 1, switch to individual test for such remaining evadible tests.<br>Prioritize and give test to people that need test tomorrow first.<br>If more tests are left, give test to people that need test in two days.<br>If still have more test left, give test to people that need test in four days.<br>Repeat until day 90.
+Note: For graphing with more actuate values, I run 10 trials and averaged the result to get the final answer.</p>
+</li>
+</ul>
+<p>Results of Individual and Dorfman testing strategy simulation is the following graphs.<br>Note: y axis are in $172 unit. For example, 100000 means a economics cost of  $17200000.</p>
+<p>Q1-d figure 1<br><img src="1.d-1.png"  width="400" height="280"> </p>
+<p>Q1-d figure 2<br><img src="1.d-2.png"  width="400" height="280"><br>Based on the x and y axis on the same scale, we can easy see that the total economic cost for individual testing is a lot more than Dorfman testing.<br>For individual testing, the cost are steadily around 600000 <em> $172 and slowly increasing as p increase, but both around 610000 </em> $172 for p = 0.002 and p = 0.02. For Dorfman testing, the cost ranges quite large, from a cost around 40000 <em> $172 with small p of 0.002, and around 550000 </em> $172 with a bigger p of 0.02.<br>Individual test&#39;s economic cost is robust to change in p but with high average cost compare to Dorfman testing. Dorfman have extremely low cost when p is small but losses the huge advantage after p increase compare to individual testing. However, in this range of p [0.002,0.02], Dorfman still always have a smaller economic cost than individual testing.</p>
+<h2 id="part-ii-the-binary-splitting-strategy">Part II: The Binary Splitting Strategy</h2>
+<h3 id="each-person-in-this-population-is-infected-with-probability-p-independent-of-others-if-none-of-the-n-people-in-the-group-is-infected-the-group-test-outcome-is-negative-if-there-is-at-least-one-infected-person-in-the-group-the-test-outcome-is-positive-">Each person in this population is infected with probability p, independent of others. If none of the n people in the group is infected, the group test outcome is negative. If there is at least one infected person in the group, the test outcome is positive.</h3>
+<h2 id="2a-">2a)</h2>
+<p><strong>E[B2]</strong> denotes the number of tests required to identify all (if any) infected persons with an initial group size 2 under the binary splitting strategy</p>
+<p>We will use the total expectation theorem.</p>
+<p>Let event P be the event that the test of the entire group of 2 people is positive. That is going to happen when at least one person in the entire group tests positive as explained. 
+Similarly, event P<sup>c</sup>  is the event that the test of the entire group of 2 people is negative. That is going to happen when all people in the group of 2 test negative. </p>
+<p>E[B2] = pr(P)E[B2|P] + pr(P<sup>c</sup>)E[B2|P<sup>c</sup>]</p>
+<p>The formula is written that way by the total expectation theorem since we can partition the sample space into 2 possible events: the first event is the event that the group tests positive, i.e. event P, and the second event is the complement of the first event which is that everyone in the group tests negative, i.e. event P<sup>c</sup>. That forms a partition since both events are disjoint, i.e. P and P<sup>c</sup> are disjoint since they both can’t happen together: either all people are not infected or at least someone is infected. Also, P U P<sup>c</sup> = Ω as either one event happens or the other as I mentioned above. Thus, the formula is satisfied by the total expectation theorem.
+To find pr(P<sup>c</sup>), 
+pr(P<sup>c</sup>) =  (1- p)<sup>2</sup>   since we would need each person in the group to test negative. Let event I be the event that one person tests negative. Since each one is infected with probability p, independent of others, the probability of everyone testing negative would just be (pr(I))<sup>2</sup> as there are 2 people in the group. pr(I)=  1- p since p is the probability one person tests positive and hence 1-p is the probability at least one person tests negative </p>
+<p>To find pr(P)
+pr(P) = (1- (1-p<sup>2</sup>))
+The reason is for event P to be satisfied, we would need at least one person in the group to test positive as that would lead to the entire group testing positive as in the description of the problem. We can think of event P as the complement of event P<sup>c</sup> as P would happen when at least one person tests positive. That is because P<sup>c</sup> represents the event that no person in the group is positive and thus its complement would be that at least one person tests positive. Thus pr(P)= 1- pr(sup&gt;c</sup>) =  (1- (1-p<sup>2</sup>))</p>
+<p>Introduce random variable C2 such that
+C2 : the number of tests required to identify all infected individuals in a group of size 2 given that at least one of these 2 persons is infected.</p>
+<p>To find E[B2|P],
+E[B2|P] = 1+ E[C2] . The reason is that given P, we would know that at least one person tests positive in the group of 2 people and hence the number of tests required to identify the infected people in the group of 2 people given that at least someone is infected is E[C2] by definition. We would still need to do the initial test of the entire group to find that someone tested positive. Thus, E[B2|P] is 1 , which is the initial test done, added to E[C2].</p>
+<p>To find E[B2|P<sup>c</sup>],
+E[B2|P<sup>c</sup>] = 1 since we need to do one test to find out that no person is infected in the group which is the initial test done. Then, we stop since we find out that no person is infected in the group and thus no further testing is needed.</p>
+<p>Thus, 
+E[B2] = pr(P)E[B2|P] + pr(P<sup>c</sup>)E[B2|P<sup>c</sup>]</p>
+<p>E[B2]= pr(P)(1+E[C2]) +1<em>(1-p)<sup>2</sup>
+E[B2]= (1- (1-p<sup>2</sup>))(1+E[C2]) +1</em> (1-p)<sup>2</sup></p>
+<p>Define event F to be the event that at least one person in the left subgroup group of one person tests positive.
+pr(F|P) represents the probability that at least one person in the left subgroup of one person tests positive given that at least one person in the group of 2 people test positive.
+pr(F|P)= p / (1- (1-p)<sup>2</sup>) by using the conditional probability law:
+<br>
+Steps : pr(F|P) = pr (F ⋂ P) / pr (P) = p / (1- (1-p)<sup>2</sup>).
+Pr (F ⋂ P) = p since pr(F)=p and if one person in the left subgroup of one person tests positive then P holds true. </p>
+<p>pr(F<sup>c</sup>|P)= probability that the left subgroup of 1 person tests negative given that at least one person in the group of 2 people tests positive = (1- pr(F|P)) . That is because pr(F<sup>c</sup>|P) is the complement of pr(F|P).</p>
+<p>E[C2|F<sup>c</sup>⋂ P] = 1 since would need to do a test to find the left subgroup tests negative and once we do, we already know that the right subgroup of 1 person tests positive since we are given P. Thus, in that case we would just be doing 1 test for this event.</p>
+<p>E[C2|F ⋂ P] = 1+1=2. The reason is that we would do the first test on the left subgroup of 1 person. Then, in this case since we are given F and P, we don’t know if the right subgroup of 1 person tests positive or negative as we don’t have enough information to find that out. F tells us the left subgroup tests positive and P tells us the group of 4 people test positive so we don’t have additional information about the right subgroup. Thus, we would need to do one test on the right subgroup in addition since it just has one person and hence the total for this event is 2.</p>
+<p>Thus,
+E[C2|P] = pr(F|P)E[C2|F ⋂ P] + pr(F<sup>c</sup>|P)E[C2|F<sup>c</sup> ⋂ P]
+E[C2|P] = 2pr(F|P) + 1(1- pr(F|P)) = (2p / (1- (1-p)<sup>2</sup>) + 1- (p / (1- (1-p)<sup>2</sup>)
+= 1 + (p / (1- (1-p)<sup>2</sup>)= (3p-p<sup>2</sup>)/(1-(1-p)<sup>2</sup>)</p>
+<p>E[B2] = (1+E[C2])( 1- (1-p)<sup>2</sup>)+  (1-p)<sup>2</sup> =(1- (1-p)<sup>2</sup>)+ (1 + (p / (1- (1-p)<sup>2</sup>))( 1- (1-p)<sup>2</sup>) + (1-p)<sup>2</sup> =2( 1- (1-p)<sup>2</sup>) + p +  (1-p)<sup>2</sup>= 1+ 3p-p<sup>2</sup></p>
+<p><strong>E[B2] = 1+ 3p-p<sup>2</sup></strong></p>
+<h2 id="2b-">2b)</h2>
+<p>Introduce the random variables C2 and B2 such that 
+C2 : the number of tests required to identify all infected individuals in a group of size 2 given that at least one of these n persons is infected.
+B2: the number of tests required when there is no additional information about this group of 2 persons except the prior knowledge that each one is infected with probability p independently. </p>
+<p>We will use the total expectation theorem.</p>
+<p>Let event P be that the test of the entire group of 4 people is positive. That is going to happen when at least one person in the entire group tests positive as explained. </p>
+<p>Event P<sup>c</sup> would then represent the event that the test of the entire group is negative and hence all 4 people tested negative.</p>
+<p>E[B4] = pr(P)E[B4|P] + pr(P<sup>c</sup>)E[B4|P<sup>c</sup>]</p>
+<p>The formula is written that way by the total expectation theorem since we can partition the sample space into 2 possible events: the first event is the event that the group tests positive and that happens when at least one person in the group tests positive, i.e. event P, and the second event is the complement of the first event which is that everyone in the group tests negative, i.e. event P<sup>c</sup>. That forms a partition since both events are disjoint, i.e. P and P<sup>c</sup> are disjoint since they both can’t happen together: either all people are not infected or at least someone is. Also, P U P<sup>c</sup> = Ω as either one event happens or the other as i mentioned above. 
+To find pr(P<sup>c</sup>), 
+p(P<sup>c</sup>) =  (1- p)<sup>4</sup> since we would need each person in the group to test negative. Let event I be the event that one person tests negative. Since each one is infected with probability p, independent of others, the probability of everyone testing negative would just be pr(I)<sup>4</sup> as there are 4 people in the group. pr(I)= 1-p since p is the probability one person tests positive and hence (1- p)<sup>4</sup> is the probability one person tests negative.</p>
+<p>To find pr(P)
+pr(P) = 1- (1-p<sup>4</sup>)
+The reason is for event P to be satisfied, we would need at least one person in the group to test positive as that would lead to the group testing positive as in the description of the problem. We can think of event P as the complement of event P<sup>c</sup> as P would happen when at least one person tests positive. That is because  P<sup>c</sup> represents the event that no person in the group is positive and thus its complement would be that at least one person tests positive. Thus pr(P)= 1- pr(P<sup>c</sup>) = 1- (1-p<sup>4</sup>)</p>
+<p>Thus,
+E[B4] = pr(P)E[B4|P] + pr(P<sup>c</sup>)E[B4|P<sup>c</sup>]
+E[B4] = (1- (1-p<sup>4</sup>))E[B4|P] + (1- p)<sup>4</sup> E[B4|P<sup>c</sup>]</p>
+<p>To find E[B4|P], 
+E[B4|P] = 1+ E[C4|P] . The reason is that given P, we would know that at least one person tests positive in the group of 4 people and hence the number of tests required to identify the infected people in the group given that at least someone is infected is E[C4|P] by definition. We would still need to do the initial test of the entire group to find that someone tested positive so we add 1 to E[C4|P].
+E[B4|P<sup>c</sup>] = 1 since we need to do one test to find out that no person is infected in the group and then there would be no further testing needed.</p>
+<p>Thus,
+E[B4]= (1-(1-p)<sup>4</sup>)(1+ E[C4|P])+ (1-p)<sup>4</sup></p>
+<p>To find E[C4], we will do the following work:
+Define event F to be the event that at least one person in the left subgroup of 2 people tests positive.
+pr(F|P) represents the probability that at least one person in the left subgroup of 2 people tests positive given that at least one person in the group of 4 people test positive.
+pr(F|P)=  (1-(1-p)<sup>2</sup>)/(1-(1-p)<sup>4</sup>) by using the conditional probability law:
+Steps : pr(F|P) = pr (F ⋂ P) / pr (P) =  (1-(1-p)<sup>2</sup>)/(1-(1-p)<sup>4</sup>).
+Pr (F ⋂ P) = (1-(1-p)<sup>2</sup>). since pr(F)= (1-(1-p)<sup>2</sup>) and if one person in the first group of 2 people tests positive then P holds true. Let us explain why pr(F) is the way it is:
+Fc represents the event that no person in the first group of 2 people tests positive. 
+pr(F<sup>c</sup>)= (1-p)<sup>2</sup> since the probability that only one person tests negative = 1- p and hence because people tests are independent, we get that answer.</p>
+<p>Thus,
+E[C4|P] = pr(F|P) E[C4|P⋂ F] +  pr(Fc|P)E[C4|P⋂ F<sup>c</sup>)] </p>
+<p>E[C4|P⋂ F<sup>c</sup>)] = (1 + E[C2]). The reason is we would need to do the initial test of the left subgroup of 2 people to find that the left subgroup tests negative. Then, knowing this and knowing that event P happened we know now that the right subgroup of 2 people must definitely test positive since we know event P happened and that is that the whole group tests positive. The expected number of tests for this scenario would be (1 + E[C2]) as a result.</p>
+<p>Thus,
+E[C4|P] =pr(F|P) E[C4|P⋂ F] + (1 + E[C2])(1- pr(F|P))</p>
+<p>To find E[C4|P⋂ F],
+E[C4|P⋂ F]= (1 + E[B2]+ E[C2]). The reason is we first do an initial test of the left subgroup of 2 people. Then, now that we know that the left subgroup of 2 people tested positive, the expected number of tests needed for the left subgroup would be E[C2] by definition of C2 as we know now that at least one person in the left subgroup tested positive from the initial test we did. Now, the right subgroup might or might not test positive. The information we have which is event P and F are not enough to tell us information on the right subgroup. The reason is from event P, we know that at least one person in the group of 4 people tested positive and given F we would know that at least one person in the left subgroup of 2 people tested positive. Thus, the expected number of tests for the right subgroup is just E[B2] by definition of B2. That is how we get the answer</p>
+<p>Thus,
+E[C4|P] =pr(F|P)(1 + E[B2]+ E[C2]) + (1 + E[C2])(1- pr(F|P))
+= 1+ pr(F|P)E[B2] + E[C2]</p>
+<p>E[B4] = (1-(1-p)<sup>4</sup>)(2+ pr(F|P)E[B2]+E[C2]) + (1-p)<sup>4</sup>
+=(1-(1-p)<sup>4</sup>)(2+ ((1-(1-p)<sup>2</sup>)/(1-(1-p)<sup>4</sup>))E[B2] + E[C2]) + (1-p)<sup>4</sup></p>
+<p>This simplifies to:
+<strong>E[B4]= 2 - (1-p)<sup>4</sup>(1+E[C2])+ (1- (1-p)<sup>2</sup>)E[B2] + E[C2]</strong></p>
+<p><strong>No, I don’t think it is necessary to test the second subgroup of 2 people together before further splitting. The reason is we already know that at least one person tested positive in the group of 4 people and that is why we did not stop testing. If we knew that no person in the group of 4 people tested positive, then we would have just done one test and stopped. Now, after we did a test on the first subgroup of 2 people, our information became updated to show that at least one person in the group of 4 people tested positive and no one in the first subgroup of 2 people tested positive. That means that we are certain now that at least one person in the second subgroup of 2 people tested positive. Therefore, we don’t need to test the second subgroup before further splitting since we already know at least one person in the second group tested positive.</strong></p>
+<h2 id="2c-">2c)</h2>
+<p>Introduce the random variables Cn and Bn such that 
+Cn : the number of tests required to identify all infected individuals in a group of size n given that at least one of these n persons is infected.
+Bn: the number of tests required when there is no additional information about this group of n persons except the prior knowledge that each one is infected with probability p independently. </p>
+<p>We will use the total expectation theorem.</p>
+<p>Let event P be that the test of the entire group of n people is positive. That is going to happen when at least one person in the entire group tests positive as explained. </p>
+<p>Event P<sup>c</sup>) would then represent the event that the test of the entire group is negative and hence all n people tested negative.</p>
+<p>E[Bn] = pr(P)E[Bn|P] + pr(P<sup>c</sup>))E[Bn|P<sup>c</sup>)]</p>
+<p>The formula is written that way by the total expectation theorem since we can partition the sample space into 2 possible events: the first event is the event that the group tests positive and that happens when at least one person in the group tests positive, i.e. event P, and the second event is the complement of the first event which is that everyone in the group tests negative, i.e. event P<sup>c</sup>). That forms a partition since both events are disjoint, i.e. P and P<sup>c</sup>) are disjoint since they both can’t happen together: either all people are not infected or at least someone is. Also, P U P<sup>c</sup> = Ω as either one event happens or the other as i mentioned above. 
+To find pr(P<sup>c</sup>)), 
+p(P<sup>c</sup>)) =  (1- p)<sup>n</sup>   since we would need each person in the group to test negative. Let event I be the event that one person tests negative. Since each one is infected with probability p, independent of others, the probability of everyone testing negative would just be pr(I)<sup>n</sup> as there are n people in the group. pr(I)= 1-p since p is the probability one person tests positive and hence (1- p)<sup>n</sup> is the probability one person tests negative.</p>
+<p>To find pr(P)
+pr(P) = 1- (1-p<sup>n</sup>)
+The reason is for event P to be satisfied, we would need at least one person in the group to test positive as that would lead to the group testing positive as in the description of the problem. We can think of event P as the complement of event P<sup>c</sup>) as P would happen when at least one person tests positive. That is because P<sup>c</sup>) represents the event that no person in the group is positive and thus its complement would be that at least one person tests positive. Thus pr(P)= 1- pr(P<sup>c</sup>)) = 1- (1-p<sup>n</sup>)</p>
+<p>Thus,
+E[Bn] = pr(P)E[Bn|P] + pr(P<sup>c</sup>))E[Bn|P<sup>c</sup>)]
+E[Bn] = (1- (1-p)<sup>n</sup>))E[Bn|P] + (1-p)<sup>n</sup> E[Bn|P<sup>c</sup>)]</p>
+<p>To find E[Bn|P], 
+E[Bn|P] = 1+ E[Cn|P] . The reason is that given P, we would know that at least one person tests positive in the group of n people and hence the number of tests required to identify the infected people in the group given that at least someone is infected is E[Cn|P] by definition. We would still need to do the initial test of the entire group to find that someone tested positive so we add 1 to E[Cn|P].
+E[Bn|Pc] = 1 since we need to do one test to find out that no person is infected in the group and then there would be no further testing needed.</p>
+<p>Thus,
+E[Bn]= (1-(1-p)<sup>n</sup>)(1+ E[Cn|P])+ (1-p)<sup>n</sup> </p>
+<p>In fact, E[Cn|P] = E[Cn] by definition since Cn is the number of tests required to identify all infected individuals in a group of size n given that at least one of these n persons is infected.</p>
+<p>so 
+E[Bn]= (1-(1-p)<sup>n</sup>)(1+ E[Cn])+ (1-p)<sup>n</sup>
+The above equation is E[Bn] in terms of Cn as needed. Now , we need to find the equation for E[Cn]</p>
+<p>To find E[Cn], we will do the following work:
+Define event F to be the event that at least one person in the left subgroup of n/2 people tests positive.
+pr(F|P) represents the probability that at least one person in the left subgroup of n/2 people tests positive given that at least one person in the group of n people test positive.
+pr(F|P)=  (1-(1-p)<sup>n/2</sup>)/(1-(1-p)<sup>n</sup>) by using the conditional probability law:
+Steps : pr(F|P) = pr (F ⋂ P) / pr (P) =  (1-(1-p)<sup>n/2</sup>)/(1-(1-p)<sup>n</sup>).
+Pr (F ⋂ P) = (1-(1-p)<sup>n/2</sup>). since pr(F)= (1-(1-p)<sup>n/2</sup>) and if one person in the first group of n/2 people tests positive then P holds true. Let us explain why pr(F) is the way it is:
+Fc represents the event that no person in the first group of n/2 people tests positive. 
+pr(Fc)= (1-p)<sup>n/2</sup> since the probability that only one person tests negative = 1- p and hence because people tests are independent, we get that answer.</p>
+<p>Thus,
+E[Cn|P] =E[Cn] = pr(F|P) E[Cn|P⋂F] +  pr(Fc|P)E[Cn|P⋂ F<sup>c</sup>] </p>
+<p>E[Cn|P⋂F<sup>c</sup>] = (1 + E[Cn]). The reason is we would need to do the initial test of the left subgroup of n/2 people to find that the left subgroup tests negative. Then, knowing this and knowing that event P happened we know now that the right subgroup of n/2 people must definitely test positive since we know event P happened and that is that the whole group tests positive. The expected number of tests for this scenario would be (1 + E[Cn/2]) as a result.</p>
+<p>Thus,
+E[Cn|P] =pr(F|P) E[Cn|P⋂ F] + (1 + E[Cn])(1- pr(F|P))</p>
+<p>To find E[Cn|P⋂ F],
+E[Cn|P⋂ F]= (1 + E[Bn/2]+ E[Cn/2]). The reason is we first do an initial test of the left subgroup of n/2 people. Then, now that we know that the left subgroup of n/2 people tested positive, the expected number of tests needed for the left subgroup would be E[Cn/2] by definition of Cn/2 as we know now that at least one person in the left subgroup tested positive from the initial test we did. Now, the right subgroup might or might not test positive. The information we have which is event P and F are not enough to tell us information on the right subgroup. The reason is from event P, we know that at least one person in the group of n people tested positive and given F we would know that at least one person in the left subgroup of n/2 people tested positive.  Why is the expected number of tests done for the left subgroup of n/2 people is actually E[Bn/2]. We explained this above but to reiterate, the idea is that given P, we know that at least one person in the group of n people is infected and given F we know at least one person in the left subgroup of n/2 people is infected. Thus, we don’t have information about the right subgroup of n/2 people. That is by definition what  the random variable Bn/2 describes so we have to use E[Bn/2] to find the expected number of tests for the right subgroup of n/2 people. That is how we get the answer</p>
+<p>Thus,
+E[Cn|P] = E[Cn] = pr(F|P) (1 + E[Bn/2]+ E[Cn/2]) + (1 + E[Cn/2])(1- pr(F|P))
+= 1+ pr(F|P)E[Bn/2] + E[Cn/2]</p>
+<p>The final equation of E[Bn] in terms of E[Cn] is below. The final equation of E[Cn] in terms of E[Cn/2] and E[Bn/2] is below.
+<br>
+<strong>E[Bn]= (1-(1-p)<sup>n</sup>)(1+ E[Cn])+ (1-p)<sup>n</sup></strong>
+<br>
+<strong>E[Cn] = 1+ pr(F|P)E[Bn/2] + E[Cn/2]</strong></p>
+<p><strong>where pr(F|P)=  (1-(1-p)<sup>n/2</sup>)/(1-(1-p)<sup>n</sup>)</strong></p>
+<h2 id="2d-">2d)</h2>
+<p>I used code to find that.<br>What I did in the code is that I first set p to 0.01 for example.
+Then, I created an array of a big size or the efficiency of the program. I created an array for the expected value of Bn called Expected_Bn[] and an array for the expected values of Cn called Expected_Cn[] . Then, I wrote the equation for expected values of Bn at n=2 that we got from the previous parts of problem 2 and set that value to index 2 of the array Expected_Bn so I set the value to Expected_Bn[2]. Then, I also wrote an equation for the expected value of Cn at n=2 that we got from the previous parts of problem 2 and set the value to index 2 of the array Expected_Cn[] so I set the value to Expected_Cn[2]. Now, we have an array that will store the expected value of Bn at many values of n as needed and we have an array that will store the expected value of Cn at many values of n as needed. We also create an array called n_div_Expected_Bn[] that is equal to n/Expected_Bn[n]. That means the array n_div_Expected_Bn[]  will describe the efficiency as stated in the problem for some value of n. We now have our arrays ready and we can start the process of filling them. I set a variable n to 4 since we have the needed information for n=2. Then, I started a while loop where I wrote the equation for Expected_Bn[] at some index n using the equation we have from part 2c. I also wrote the equation for Expected_Cn[] at some index n using the information we have from part 2c. Then, I said let n_div_Expected_Bn(n) = n/ Expected_Bn(n) to calculate the efficiency for some n. I let the while loop stop when n&gt;=10000000000 so as to run the program on a large number of n. Then, after the while loop ended, I used the max() function to find the value of n at which n_div_Expected_Bn[] is maximized meaning efficiency is maximized. I returned that value as that would be the final value we need, the optimal group size n<em> that maximizes the efficiency of the binary splitting strategy. I did that for all values of p, each of p=0.01, 0.04, 0.07 and 0.1. Everytime, I need to find the value of the optimal n</em> for some p, I just changed the value of p at the top of the code .</p>
+<p><strong>p= 0.01, n* = 64</strong>
+<br> 
+<strong>p = 0.04, n* = 16</strong>
+<br> 
+<strong>p = 0.07, n* =8</strong>
+<br> 
+<strong>p = 0.1, n* =8</strong>
+<br> </p>
+<h2 id="2e-">2e)</h2>
+<p>For p = 0.01, 0.04, 0.07, 0.1, numerically solve the expected number of tests needed to screen a population of N = 10, 000 under the binary splitting strategy:</p>
+<p>For N=10,000</p>
+<p>The technique we will do since 10,000 is not a power of 2 as the equation for 2c is used is: We will divide the population of 10,000 into maximum possible groups of optimal size and test the remainder using Binary testing. The optimal sizes are chosen such that the remainder is also a power of two.<br></p>
+<p><strong>For p =0.01</strong> , the optimal group size at that value of p is 64 as found in part 2d.
+Divide 10,000 into 156 groups of 64 people and one group of 16 people as  remainder so
+10,000 = 156(64) + 16</p>
+<p>Find the expected number of tests for a group of 64 and a group of 16. Then, use linearity of expectation to get:
+E[B10000]= 156E[B64] +  E[B16]
+Thus, expected number of tests = 156E[B64] + E[B16]
+E[B64] = 6.3387 found from the code 
+E[B16] = 1.9355  found from the code
+E[B10000] = 156(6.3387) + 1.9355 = <strong>990.7689</strong></p>
+<p><strong>For p=0.01, the expected number of tests needed to screen a population of N = 10, 000 under the binary splitting strategy is 990.7689</strong></p>
+<p><strong>For p=0.04</strong>, the optimal group size at that value of p is 16 as found in part 2d.
+Divide 10,000 into 625 groups of 16 people exactly
+10,000 = 625(16)</p>
+<p>Find the expected number of tests for a group of 16 people. Then, use linearity of expectation to get:
+E[B10000]= 625E[B16] 
+Thus, expected number of tests = 625 E[B16] </p>
+<p>E[B16] =  4.4801 as found by code 
+E[B10000] = 625E[B16] = <strong>2800.1</strong></p>
+<p><strong>For p=0.04, the expected number of tests needed to screen a population of N = 10, 000 under the binary splitting strategy is 2800.1</strong></p>
+<p><strong>For p=0.07</strong>, the optimal group size at that value of p is 8 as found in part 2d.
+Divide 10,000 into 1250 groups of 8 people exactly
+10,000 = 1250(8)</p>
+<p>Find the expected number of tests for a group of 8 people. Then, use linearity of expectation to get:
+E[B10000]= 1250E[B8] 
+Thus, expected number of tests = 1250E[B8] </p>
+<p>E[B8]= 3.2869 as found by code 
+E[B10000] = 1250 * E[B8] = <strong>4108.6</strong> </p>
+<p><strong>For p=0.07, the expected number of tests needed to screen a population of N = 10, 000 under the binary splitting strategy is 4108.6</strong></p>
+<p><strong>For p=0.1</strong>, the optimal group size at that value of p is 8 as found in part 2d.
+Divide 10,000 into 1250 groups of 8 people exactly
+10,000 = 1250(8)</p>
+<p>Find the expected number of tests for a group of 8 people. Then, use linearity of expectation to get:
+E[B10000]= 1250E[B8] 
+Thus, expected number of tests = 1250E[B8] </p>
+<p>E[B8]=  4.1412  as found by code 
+E[B10000] = 1250 * E[B8] = <strong>5176.5</strong></p>
+<p><strong>For p=0.1, the expected number of tests needed to screen a population of N = 10, 000 under the binary splitting strategy is 5176.5</strong></p>
+<p>For p = 0.01, 0.04, 0.07, 0.1, numerically solve the expected number of tests needed to screen a population of N = 10, 000 under the Dorfman strategy: 
+using code:
+<strong>For p=0.01, the expected number of tests needed to screen a population of N = 10, 000 under the Dorfman strategy is 1859.97</strong>
+<strong>For p=0.04, the expected number of tests needed to screen a population of N = 10, 000 under the Dorfman strategy is 3476.884</strong>
+<strong>For p=0.07, the expected number of tests needed to screen a population of N = 10, 000 under the Dorfman strategy is 4386.586</strong>
+<strong>For p=0.1, the expected number of tests needed to screen a population of N = 10, 000 under the Dorfman strategy is 5080.945</strong></p>
+<p>As shown, the binary splitting strategy for each value of p offers lower expected number of tests for all probability values expect at p=0.1. For instance, at p=0.01, the binary splitting strategy has expected number of tests of 990.7689 versus the Dorfman strategy needs 1859.97 tests. For p=0.04, the binary splitting startgey has expected number of tests of 2800.1 versus the Dorfman strategy needs 3476.884 tests for that same value of p. For p=0.07, the binary splitting stratgey has expected number of tests of 4108.6 versus the Dorfman strategy that has exepected number of tests of 4386.586. For p=0.1, the binary splitting strategy has expected number of tests of 5176.5 versus the Dorfman strategy which has a lower number of 5080.945. A shown, the improvement of the binary splitting strategy from Dorfman is affected by p. At p=0.01, the binary splitting strategy has expected number of tests about a half of the Dorfman strategy. As p increases from 0.01 to 0.04 to 0.07 to 0.1, the gap between the binary splitting strategy and the Dorfman strategy lessens so that the number of tests offered by the binary splitting strategy is more than that of the Dorfman startegy at p=0.1. when the group tests negative, both don&#39;t do further testing. However, when the group tests positive, that is when the 2 strategies differ. The Dorfman startegy  will test all individuals to identify the infected people. While the Binary splitting strategy will first split the 2 groups knowing the main group tested positive. It will first test the left sungroup and check if it tested postive or not, if it did not, then it tests the right subgroup in binary way too but if it did instead then it will test the first subgroup further using binary strategy along with the second subgroup. Thus, the binary is expected to have a better performance than the Dorfman in general since it does not test every person once it finds the group infected. At p=0.01, we see the binary offering lower number of tests than the Dorfman than compared to p=0.07, the reason is at a lower p, we will have a lower infection rate and thus when the Dorfman finds the group positive,  person infected, they will test every person in the group to check if he is infected or not. However, the binary will split the group to see if the left subgroup is positive and only then test it by binary and also check if the right subgroup is positive. Therefore, for lower infection rates such as at p=0.01, the binary will do in expected less tests than Dofrman since it will not test every person necessarily due to the lower infection rates and hence lower probabilities for groups of people to be infected.</p>
+<h1 id="appendix-code-">Appendix - code:</h1>
+<h2 id="1a-">1a)</h2>
+<pre><code>import matplotlib.pyplot as plt
+import numpy as <span class="hljs-built_in">np</span>
+import math
+
+# <span class="hljs-number">1.</span>a - <span class="hljs-number">1</span>
+n = <span class="hljs-number">100</span>
+p = <span class="hljs-built_in">np</span>.arange(<span class="hljs-number">0.0</span>, <span class="hljs-number">0.4</span>, <span class="hljs-number">0.001</span>)
+<span class="hljs-built_in">mean</span> = []
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> p:
+    <span class="hljs-built_in">num</span> = n + (<span class="hljs-number">1</span>-n) * math.pow(<span class="hljs-number">1</span>-i, n)
+    <span class="hljs-built_in">mean</span>.<span class="hljs-built_in">append</span>(<span class="hljs-built_in">num</span>)
+plt.<span class="hljs-built_in">xlabel</span>(<span class="hljs-string">"p"</span>)
+plt.<span class="hljs-built_in">ylabel</span>(<span class="hljs-string">"E[Dn]"</span>)
+plt.<span class="hljs-built_in">title</span>(<span class="hljs-string">"p vs E[Dn] (n=100)"</span>)
+plt.plot(p, <span class="hljs-built_in">np</span>.<span class="hljs-built_in">array</span>(<span class="hljs-built_in">mean</span>), <span class="hljs-built_in">color</span>='c')
+plt.savefig('images/<span class="hljs-number">1.</span>a-<span class="hljs-number">1.</span>png')
+
+
+# <span class="hljs-number">1.</span>a - <span class="hljs-number">2</span>
+p = <span class="hljs-number">0.01</span>
+n = <span class="hljs-built_in">np</span>.arange(<span class="hljs-number">10</span>, <span class="hljs-number">200</span>)
+<span class="hljs-built_in">mean</span> = []
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> n:
+    <span class="hljs-built_in">num</span> = i + (<span class="hljs-number">1</span>-i) * math.pow(<span class="hljs-number">1</span>-p, i)
+    <span class="hljs-built_in">mean</span>.<span class="hljs-built_in">append</span>(<span class="hljs-built_in">num</span>)
+plt.<span class="hljs-built_in">xlabel</span>(<span class="hljs-string">"n"</span>)
+plt.<span class="hljs-built_in">ylabel</span>(<span class="hljs-string">"E[Dn]"</span>)
+plt.<span class="hljs-built_in">title</span>(<span class="hljs-string">"n vs E[Dn] (p=0.01)"</span>)
+plt.xlim([<span class="hljs-number">10</span>, <span class="hljs-number">200</span>])
+plt.ylim([<span class="hljs-number">0</span>, <span class="hljs-number">200</span>])
+plt.plot(n, <span class="hljs-built_in">np</span>.<span class="hljs-built_in">array</span>(<span class="hljs-built_in">mean</span>), <span class="hljs-built_in">color</span>='c')
+plt.savefig('images/<span class="hljs-number">1.</span>a-<span class="hljs-number">2.</span>png')
+</code></pre><h2 id="1b-">1b)</h2>
+<pre><code>import matplotlib.pyplot as plt
+import numpy as <span class="hljs-built_in">np</span>
+import math
+
+# <span class="hljs-number">1.</span>b - <span class="hljs-number">1</span>
+p = <span class="hljs-built_in">np</span>.arange(<span class="hljs-number">0.0</span>, <span class="hljs-number">0.4</span>, <span class="hljs-number">0.0005</span>)
+n = <span class="hljs-built_in">np</span>.arange(<span class="hljs-number">0</span>, <span class="hljs-number">25</span>)
+n_star = []
+<span class="hljs-keyword">for</span> diff_p <span class="hljs-keyword">in</span> p:
+    <span class="hljs-built_in">max</span> = <span class="hljs-number">0</span>
+    max_n = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> n:
+        <span class="hljs-built_in">num</span> = i / (i + (<span class="hljs-number">1</span>-i) * math.pow(<span class="hljs-number">1</span>-diff_p, i))
+        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">num</span> &gt; <span class="hljs-built_in">max</span>):
+            <span class="hljs-built_in">max</span> = <span class="hljs-built_in">num</span>
+            max_n = i
+    n_star.<span class="hljs-built_in">append</span>(max_n)
+x_axis = [<span class="hljs-number">0.0</span>, <span class="hljs-number">0.1</span>, <span class="hljs-number">0.2</span>, <span class="hljs-number">0.3</span>, <span class="hljs-number">0.4</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.6</span>, <span class="hljs-number">0.7</span>, <span class="hljs-number">0.8</span>, <span class="hljs-number">0.9</span>, <span class="hljs-number">1.0</span>]
+plt.xticks(x_axis)
+y_axis = <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-number">26</span>, <span class="hljs-number">2</span>)
+plt.yticks(y_axis)
+plt.<span class="hljs-built_in">xlabel</span>(<span class="hljs-string">"p"</span>)
+plt.<span class="hljs-built_in">ylabel</span>(<span class="hljs-string">"n*"</span>)
+plt.<span class="hljs-built_in">title</span>(<span class="hljs-string">"p vs n*"</span>)
+plt.plot(p, <span class="hljs-built_in">np</span>.<span class="hljs-built_in">array</span>(n_star), <span class="hljs-built_in">color</span>='c')
+plt.savefig('images/<span class="hljs-number">1.b-1</span>.png')
+</code></pre><h2 id="1c-">1c)</h2>
+<pre><code>import matplotlib.pyplot as plt
+import numpy as <span class="hljs-built_in">np</span>
+import math
+import <span class="hljs-built_in">random</span>
+
+# Q1 - c
+# Manually checked correct by expectation theorem!
+
+p = [<span class="hljs-number">0.01</span>, <span class="hljs-number">0.04</span>, <span class="hljs-number">0.07</span>, <span class="hljs-number">0.1</span>]
+n = <span class="hljs-built_in">np</span>.arange(<span class="hljs-number">0</span>, <span class="hljs-number">25</span>)
+n_star = []
+<span class="hljs-keyword">for</span> diff_p <span class="hljs-keyword">in</span> p:
+    <span class="hljs-built_in">max</span> = <span class="hljs-number">0</span>
+    max_n = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> n:
+        <span class="hljs-built_in">num</span> = i / (i + (<span class="hljs-number">1</span>-i) * math.pow(<span class="hljs-number">1</span>-diff_p, i))
+        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">num</span> &gt; <span class="hljs-built_in">max</span>):
+            <span class="hljs-built_in">max</span> = <span class="hljs-built_in">num</span>
+            max_n = i
+    n_star.<span class="hljs-built_in">append</span>(max_n)
+
+total_test_lst = []
+<span class="hljs-keyword">for</span> index <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">4</span>):
+    p_cur = p[index]
+    n_star_cur = n_star[index]
+    total_test = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> run <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1000</span>):
+        population = <span class="hljs-number">10000</span>
+        <span class="hljs-keyword">while</span>(population != <span class="hljs-number">0</span>):
+            n_cur = <span class="hljs-built_in">min</span>(n_star_cur, population)
+            population = population - n_cur
+            infected = False
+            <span class="hljs-keyword">for</span> prob <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n_cur):
+                rand_num = <span class="hljs-built_in">random</span>.<span class="hljs-built_in">random</span>()
+                <span class="hljs-keyword">if</span>(rand_num &lt; p_cur):
+                    infected = True
+                    <span class="hljs-built_in">break</span>
+            <span class="hljs-keyword">if</span>(infected):
+                total_test = total_test + n_cur
+            <span class="hljs-keyword">else</span>:
+                total_test = total_test + <span class="hljs-number">1</span>
+    average_test = total_test/<span class="hljs-number">1000</span>
+    total_test_lst.<span class="hljs-built_in">append</span>(average_test)
+
+<span class="hljs-built_in">print</span>(total_test_lst)
+
+plt.xticks(p)
+plt.<span class="hljs-built_in">xlabel</span>(<span class="hljs-string">"p"</span>)
+plt.<span class="hljs-built_in">ylabel</span>(<span class="hljs-string">"average number of tests"</span>)
+plt.<span class="hljs-built_in">title</span>(
+    <span class="hljs-string">"p vs average number of tests to clear (N=10000)"</span>)
+plt.plot(p, <span class="hljs-built_in">np</span>.<span class="hljs-built_in">array</span>(total_test_lst), '.-c')
+plt.savefig('images/<span class="hljs-number">1.</span>c-<span class="hljs-number">1.</span>png')
+
+plt.clf()
+
+ratio_lst = []
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> total_test_lst:
+    ratio_lst.<span class="hljs-built_in">append</span>(i/<span class="hljs-number">10000</span>)
+plt.<span class="hljs-built_in">xlabel</span>(<span class="hljs-string">"p"</span>)
+plt.<span class="hljs-built_in">ylabel</span>(<span class="hljs-string">"ratio of tests by Dorfman over indiviual"</span>)
+plt.<span class="hljs-built_in">title</span>(
+    <span class="hljs-string">"p vs ratio of tests to clear by Dorfman over indiviual (N=10000)"</span>)
+plt.plot(p, <span class="hljs-built_in">np</span>.<span class="hljs-built_in">array</span>(ratio_lst), '.-c')
+plt.savefig('images/<span class="hljs-number">1.</span>c-<span class="hljs-number">2.</span>png')
+</code></pre><h2 id="1d-">1d)</h2>
+<pre><code><span class="hljs-built_in">import</span> matplotlib.pyplot as plt
+<span class="hljs-built_in">import</span> numpy as np
+<span class="hljs-built_in">import</span> math
+<span class="hljs-built_in">import</span> random
+<span class="hljs-string">""</span><span class="hljs-string">"
+Start on day 1, continue for 3 months, assume 30 days in each month, so day ranges in [1,90]
+On day 1, everyone have probability p of being infected.
+Every person needs a test after 7 days.
+Every person not being to work (due to test limitation or was sick) results in a lose of $172 dollars per day.
+Goal: Minimize social/economic impact
+"</span><span class="hljs-string">""</span>
+class person_class:
+    def __init__(self, is_infected: bool, infected_date, last_test_date, test_good: bool):
+        self.<span class="hljs-attr">is_infected</span> = is_infected
+        self.<span class="hljs-attr">infected_date</span> = infected_date
+        self.<span class="hljs-attr">last_test_date</span> = last_test_date
+        self.<span class="hljs-attr">test_good</span> = test_good
+<span class="hljs-attr">population</span> = <span class="hljs-number">10000</span>
+<span class="hljs-attr">max_test</span> = <span class="hljs-number">500</span>
+<span class="hljs-attr">p_lst</span> = np.arange(<span class="hljs-number">0.002</span>, <span class="hljs-number">0.0201</span>, <span class="hljs-number">0.002</span>)
+
+<span class="hljs-comment">#########################################################################</span>
+<span class="hljs-comment"># Individual Code</span>
+<span class="hljs-comment"># 1. All tests should be used in a day</span>
+<span class="hljs-comment"># 2. Test individual when they need a new test to go to work</span>
+<span class="hljs-comment"># Representation: A size 10000 people list, a size 10000 day list</span>
+<span class="hljs-comment"># each index is a person</span>
+<span class="hljs-comment"># for each day, first update the people list to simulate people getting sick</span>
+<span class="hljs-comment"># do tests for 500 people</span>
+<span class="hljs-comment">##########################################################################</span>
+<span class="hljs-attr">total_cost</span> = []
+for p_i <span class="hljs-keyword">in</span> p_lst:
+    <span class="hljs-attr">p</span> = p_i
+    <span class="hljs-attr">people_lst</span> = []
+    <span class="hljs-attr">daily_cost</span> = []
+    print(<span class="hljs-string">"p ="</span>, p)
+    <span class="hljs-comment"># initialize day 0</span>
+    for i <span class="hljs-keyword">in</span> range(population):
+        people_lst.append(person_class(False, -<span class="hljs-number">30</span>, -<span class="hljs-number">30</span>, True))
+    <span class="hljs-comment"># simulate other days</span>
+    for day <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, <span class="hljs-number">91</span>, <span class="hljs-number">1</span>):
+        <span class="hljs-attr">temp_count</span> = <span class="hljs-number">0</span>
+        <span class="hljs-comment"># calculating cost</span>
+        for person <span class="hljs-keyword">in</span> people_lst:
+            <span class="hljs-keyword">if</span>(person.last_test_date &lt; day - <span class="hljs-number">7</span> <span class="hljs-literal">or</span> not person.test_good):
+                <span class="hljs-attr">temp_count</span> = temp_count + <span class="hljs-number">1</span>
+        daily_cost.append(temp_count)
+        <span class="hljs-comment"># each day:</span>
+        <span class="hljs-attr">available_test</span> = max_test
+        <span class="hljs-comment"># simulate sick now</span>
+        for person <span class="hljs-keyword">in</span> people_lst:
+            <span class="hljs-keyword">if</span> (not person.is_infected):
+                <span class="hljs-attr">rand_num</span> = random.random()
+                <span class="hljs-keyword">if</span>(rand_num &lt; p):
+                    person.<span class="hljs-attr">is_infected</span> = True
+                    person.<span class="hljs-attr">infected_date</span> = day
+        <span class="hljs-comment"># do tests</span>
+        for person <span class="hljs-keyword">in</span> people_lst:
+            <span class="hljs-comment"># they need a test right now</span>
+            <span class="hljs-comment"># People who were healthy</span>
+            <span class="hljs-comment">#   -&gt; test_result good AND last_test_date diff 7</span>
+            <span class="hljs-comment"># 2. People who were sick, waited 21 days</span>
+            <span class="hljs-comment">#   -&gt; test_result bad AND infection_date diff 21</span>
+            <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">7</span>:
+                <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                person.<span class="hljs-attr">last_test_date</span> = day
+                person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span>:
+                    break
+            elif not person.test_good <span class="hljs-literal">and</span> person.infected_date &lt;= day - <span class="hljs-number">21</span>:
+                <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                person.<span class="hljs-attr">last_test_date</span> = day
+                person.<span class="hljs-attr">is_infected</span> = False
+                person.<span class="hljs-attr">test_good</span> = True
+                <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span>:
+                    break
+    <span class="hljs-attr">sum_cost</span> = <span class="hljs-number">0</span>
+    for k <span class="hljs-keyword">in</span> daily_cost:
+        <span class="hljs-attr">sum_cost</span> = k + sum_cost
+    total_cost.append(sum_cost)
+print(total_cost)
+plt.xlabel(<span class="hljs-string">"p"</span>)
+plt.ylabel(<span class="hljs-string">"total economic cost in 3 months (unit: $172)"</span>)
+plt.title(<span class="hljs-string">"p vs total cost with individual testing"</span>)
+plt.xlim([<span class="hljs-number">0.002</span>, <span class="hljs-number">0.02</span>])
+plt.ylim([<span class="hljs-number">40000</span>, <span class="hljs-number">650000</span>])
+plt.plot(p_lst, total_cost, <span class="hljs-attr">color='c')</span>
+plt.savefig('images/<span class="hljs-number">1</span>.d-<span class="hljs-number">1</span>.png')
+
+
+<span class="hljs-comment">#####################################################################</span>
+<span class="hljs-comment"># Dorfman Code</span>
+<span class="hljs-comment"># 1. Almost all tests should be used in a day</span>
+<span class="hljs-comment"># 2. Test the n_star group (depending on p) in the population with the Dorfman method.</span>
+<span class="hljs-comment"># 3. If the remaining available test in a day is less then n_star + 1 to promise over</span>
+<span class="hljs-comment"># the whole group via Dorfman method, switch to individual test for such remaining tests</span>
+<span class="hljs-comment"># 4. Prioritize and give test to people that need test tomorrow first.</span>
+<span class="hljs-comment"># 5. If more tests are left, give test to people that need test in two days.</span>
+<span class="hljs-comment"># 6. If still have more test left, give test to people that need test in four days.</span>
+<span class="hljs-comment">#####################################################################</span>
+<span class="hljs-attr">total_cost_10</span> = [<span class="hljs-number">0</span> for i <span class="hljs-keyword">in</span> range(<span class="hljs-number">10</span>)]
+for run <span class="hljs-keyword">in</span> range(<span class="hljs-number">10</span>):
+    <span class="hljs-attr">total_cost_lst</span> = []
+    <span class="hljs-attr">n</span> = np.arange(<span class="hljs-number">0</span>, <span class="hljs-number">25</span>)
+    <span class="hljs-attr">n_star_lst</span> = []
+    for diff_p <span class="hljs-keyword">in</span> p_lst:
+        <span class="hljs-attr">max</span> = <span class="hljs-number">0</span>
+        <span class="hljs-attr">max_n</span> = <span class="hljs-number">0</span>
+        for i <span class="hljs-keyword">in</span> n:
+            <span class="hljs-attr">num</span> = i / (i + (<span class="hljs-number">1</span>-i) * math.pow(<span class="hljs-number">1</span>-diff_p, i))
+            <span class="hljs-keyword">if</span>(num &gt; max):
+                <span class="hljs-attr">max</span> = num
+                <span class="hljs-attr">max_n</span> = i
+        n_star_lst.append(max_n)
+    for p_i <span class="hljs-keyword">in</span> range(len(p_lst)):
+        <span class="hljs-attr">p</span> = p_lst[p_i]
+        <span class="hljs-attr">daily_cost</span> = []
+        <span class="hljs-attr">n_star</span> = n_star_lst[p_i]
+        <span class="hljs-attr">people_lst</span> = []
+        print(<span class="hljs-string">"p ="</span>, p)
+        <span class="hljs-comment"># initialize day 0</span>
+        for i <span class="hljs-keyword">in</span> range(population):
+            people_lst.append(person_class(False, -<span class="hljs-number">30</span>, -<span class="hljs-number">30</span>, True))
+        <span class="hljs-comment"># simulate other days</span>
+        for day <span class="hljs-keyword">in</span> range(<span class="hljs-number">1</span>, <span class="hljs-number">91</span>, <span class="hljs-number">1</span>):
+            <span class="hljs-attr">good_to_work</span> = <span class="hljs-number">0</span>
+            <span class="hljs-attr">index</span> = <span class="hljs-number">0</span>
+            for person <span class="hljs-keyword">in</span> people_lst:
+                <span class="hljs-attr">index</span> = index + <span class="hljs-number">1</span>
+                <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &gt;= day - <span class="hljs-number">7</span>:
+                    <span class="hljs-attr">good_to_work</span> = good_to_work + <span class="hljs-number">1</span>
+            <span class="hljs-comment"># calculating cost</span>
+            <span class="hljs-attr">temp_count</span> = <span class="hljs-number">0</span>
+            for person <span class="hljs-keyword">in</span> people_lst:
+                <span class="hljs-keyword">if</span>(person.last_test_date &lt; day - <span class="hljs-number">7</span> <span class="hljs-literal">or</span> not person.test_good):
+                    <span class="hljs-attr">temp_count</span> = temp_count + <span class="hljs-number">1</span>
+            daily_cost.append(temp_count)
+            <span class="hljs-comment"># each day:</span>
+            <span class="hljs-attr">available_test</span> = max_test
+            <span class="hljs-comment"># simulate sick now</span>
+            for person <span class="hljs-keyword">in</span> people_lst:
+                <span class="hljs-keyword">if</span> (not person.is_infected):
+                    <span class="hljs-attr">rand_num</span> = random.random()
+                    <span class="hljs-keyword">if</span>(rand_num &lt; p):
+                        person.<span class="hljs-attr">is_infected</span> = True
+                        person.<span class="hljs-attr">infected_date</span> = day
+            <span class="hljs-attr">find_next_n</span> = <span class="hljs-number">0</span>
+            <span class="hljs-comment"># do tests</span>
+            <span class="hljs-comment"># they need a test right now</span>
+            <span class="hljs-comment"># 1. People who were healthy</span>
+            <span class="hljs-comment">#   -&gt; test_result good AND last_test_date diff 7</span>
+            <span class="hljs-comment"># 2. People who were sick, waited 21 days</span>
+            <span class="hljs-comment">#   -&gt; test_result bad AND infection_date diff 21</span>
+            <span class="hljs-attr">clear</span> = <span class="hljs-number">0</span>
+            for i <span class="hljs-keyword">in</span> range(<span class="hljs-number">0</span>, <span class="hljs-number">10000</span>, n_star):
+                <span class="hljs-attr">break_i_loop</span> = False
+                <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span>:
+                    break
+                <span class="hljs-comment"># if not enough test, use individual testing, if at the end of the list, just end the day</span>
+                <span class="hljs-keyword">if</span>(available_test &lt;= n_star):
+                    for j <span class="hljs-keyword">in</span> range(i, i+available_test, <span class="hljs-number">1</span>):
+                        <span class="hljs-keyword">if</span> j &gt;= <span class="hljs-number">10000</span>:
+                            break
+                        <span class="hljs-attr">person</span> = people_lst[j]
+                        <span class="hljs-comment"># 1) healthy people need regular test 2) sick people need proof test 3) healthy person testing early with extra test</span>
+                        <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">7</span>:
+                            <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                            person.<span class="hljs-attr">last_test_date</span> = day
+                            person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                        elif not person.test_good <span class="hljs-literal">and</span> person.infected_date &lt;= day - <span class="hljs-number">21</span>:
+                            <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                            person.<span class="hljs-attr">last_test_date</span> = day
+                            person.<span class="hljs-attr">is_infected</span> = False
+                            person.<span class="hljs-attr">test_good</span> = True
+                <span class="hljs-comment"># test n_star people together</span>
+                <span class="hljs-keyword">else</span>:
+                    <span class="hljs-attr">all_clear</span> = True
+                    <span class="hljs-attr">skip</span> = <span class="hljs-number">0</span>
+                    <span class="hljs-attr">j</span> = i
+                    while (j &lt; i+n_star+skip):
+                        <span class="hljs-keyword">if</span> j &gt;= <span class="hljs-number">10000</span>:
+                            <span class="hljs-attr">break_i_loop</span> = True
+                            break
+                        <span class="hljs-attr">person</span> = people_lst[j]
+                        <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">7</span>:
+                            person.<span class="hljs-attr">last_test_date</span> = day
+                            person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                            <span class="hljs-keyword">if</span> person.is_infected:
+                                <span class="hljs-attr">all_clear</span> = False
+                        elif not person.test_good <span class="hljs-literal">and</span> person.infected_date &lt;= day - <span class="hljs-number">21</span>:
+                            person.<span class="hljs-attr">last_test_date</span> = day
+                            person.<span class="hljs-attr">is_infected</span> = False
+                            person.<span class="hljs-attr">test_good</span> = True
+                        <span class="hljs-keyword">else</span>:
+                            <span class="hljs-attr">skip</span> = skip + <span class="hljs-number">1</span>
+                        <span class="hljs-attr">j</span> = j + <span class="hljs-number">1</span>
+                    <span class="hljs-keyword">if</span> all_clear:
+                        <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                        <span class="hljs-attr">clear</span> = clear + <span class="hljs-number">1</span>
+                    <span class="hljs-keyword">else</span>:
+                        <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span> - n_star
+                <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span> <span class="hljs-literal">or</span> break_i_loop:
+                    break
+
+            <span class="hljs-keyword">if</span> available_test &gt; <span class="hljs-number">0</span>:
+                for i <span class="hljs-keyword">in</span> range(<span class="hljs-number">0</span>, <span class="hljs-number">10000</span>, n_star):
+                    <span class="hljs-attr">break_i_loop</span> = False
+                    <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span>:
+                        break
+                    <span class="hljs-keyword">if</span>(available_test &lt;= n_star):
+                        for j <span class="hljs-keyword">in</span> range(i, i+available_test, <span class="hljs-number">1</span>):
+                            <span class="hljs-keyword">if</span> j &gt;= <span class="hljs-number">10000</span>:
+                                break
+                            <span class="hljs-attr">person</span> = people_lst[j]
+                            <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">5</span>:
+                                <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                                person.<span class="hljs-attr">last_test_date</span> = day
+                                person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                    <span class="hljs-keyword">else</span>:
+                        <span class="hljs-attr">all_clear</span> = True
+                        <span class="hljs-attr">skip</span> = <span class="hljs-number">0</span>
+                        <span class="hljs-attr">j</span> = i
+                        while (j &lt; i+n_star+skip):
+                            <span class="hljs-keyword">if</span> j &gt;= <span class="hljs-number">10000</span>:
+                                <span class="hljs-attr">break_i_loop</span> = True
+                                break
+                            <span class="hljs-attr">person</span> = people_lst[j]
+                            <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">5</span>:
+                                person.<span class="hljs-attr">last_test_date</span> = day
+                                person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                                <span class="hljs-keyword">if</span> person.is_infected:
+                                    <span class="hljs-attr">all_clear</span> = False
+                            <span class="hljs-keyword">else</span>:
+                                <span class="hljs-attr">skip</span> = skip + <span class="hljs-number">1</span>
+                            <span class="hljs-attr">j</span> = j + <span class="hljs-number">1</span>
+                        <span class="hljs-keyword">if</span> all_clear:
+                            <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                            <span class="hljs-attr">clear</span> = clear + <span class="hljs-number">1</span>
+                        <span class="hljs-keyword">else</span>:
+                            <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span> - n_star
+                    <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span> <span class="hljs-literal">or</span> break_i_loop:
+                        break
+            <span class="hljs-keyword">if</span> available_test &gt; <span class="hljs-number">0</span>:
+                for i <span class="hljs-keyword">in</span> range(<span class="hljs-number">0</span>, <span class="hljs-number">10000</span>, n_star):
+                    <span class="hljs-attr">break_i_loop</span> = False
+                    <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span>:
+                        break
+                    <span class="hljs-keyword">if</span>(available_test &lt;= n_star):
+                        for j <span class="hljs-keyword">in</span> range(i, i+available_test, <span class="hljs-number">1</span>):
+                            <span class="hljs-keyword">if</span> j &gt;= <span class="hljs-number">10000</span>:
+                                break
+                            <span class="hljs-attr">person</span> = people_lst[j]
+                            <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">3</span>:
+                                <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                                person.<span class="hljs-attr">last_test_date</span> = day
+                                person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                    <span class="hljs-keyword">else</span>:
+                        <span class="hljs-attr">all_clear</span> = True
+                        <span class="hljs-attr">skip</span> = <span class="hljs-number">0</span>
+                        <span class="hljs-attr">j</span> = i
+                        while (j &lt; i+n_star+skip):
+                            <span class="hljs-keyword">if</span> j &gt;= <span class="hljs-number">10000</span>:
+                                <span class="hljs-attr">break_i_loop</span> = True
+                                break
+                            <span class="hljs-attr">person</span> = people_lst[j]
+                            <span class="hljs-keyword">if</span> person.test_good <span class="hljs-literal">and</span> person.last_test_date &lt;= day - <span class="hljs-number">3</span>:
+                                person.<span class="hljs-attr">last_test_date</span> = day
+                                person.<span class="hljs-attr">test_good</span> = not person.is_infected
+                                <span class="hljs-keyword">if</span> person.is_infected:
+                                    <span class="hljs-attr">all_clear</span> = False
+                            <span class="hljs-keyword">else</span>:
+                                <span class="hljs-attr">skip</span> = skip + <span class="hljs-number">1</span>
+                            <span class="hljs-attr">j</span> = j + <span class="hljs-number">1</span>
+                        <span class="hljs-keyword">if</span> all_clear:
+                            <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span>
+                            <span class="hljs-attr">clear</span> = clear + <span class="hljs-number">1</span>
+                        <span class="hljs-keyword">else</span>:
+                            <span class="hljs-attr">available_test</span> = available_test - <span class="hljs-number">1</span> - n_star
+                    <span class="hljs-keyword">if</span> <span class="hljs-attr">available_test</span> == <span class="hljs-number">0</span> <span class="hljs-literal">or</span> break_i_loop:
+                        break
+        <span class="hljs-attr">sum_cost</span> = <span class="hljs-number">0</span>
+        for k <span class="hljs-keyword">in</span> daily_cost:
+            <span class="hljs-attr">sum_cost</span> = k + sum_cost
+        total_cost_lst.append(sum_cost)
+    print(total_cost_lst)
+    for p_i <span class="hljs-keyword">in</span> range(len(total_cost_lst)):
+        total_cost_10[p_i] = total_cost_10[p_i] + total_cost_lst[p_i]
+    <span class="hljs-attr">total_cost_lst</span> = []
+for p_i <span class="hljs-keyword">in</span> range(len(total_cost_10)):
+    total_cost_10[p_i] = total_cost_10[p_i] / <span class="hljs-number">10</span>
+print(total_cost_10)
+
+plt.clf()
+plt.xlabel(<span class="hljs-string">"p"</span>)
+plt.ylabel(<span class="hljs-string">"total economic cost for 3 months with Dorfman testing (unit: $172)"</span>)
+plt.title(<span class="hljs-string">"p vs total cost with Dorfman testing"</span>)
+plt.xlim([<span class="hljs-number">0.002</span>, <span class="hljs-number">0.02</span>])
+plt.ylim([<span class="hljs-number">40000</span>, <span class="hljs-number">650000</span>])
+plt.plot(p_lst, total_cost_10, <span class="hljs-attr">color='c')</span>
+plt.savefig('images/<span class="hljs-number">1</span>.d-<span class="hljs-number">2</span>.png')
+</code></pre><h2 id="2d-">2d)</h2>
+<p><strong>for p= 0.01</strong></p>
+<pre><code>%for p = <span class="hljs-number">0.01</span>
+p = <span class="hljs-number">0.01</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+disp(vIndex)
+</code></pre><p><strong>for p =0.04</strong></p>
+<pre><code>%for p = <span class="hljs-number">0.04</span>
+p = <span class="hljs-number">0.04</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+disp(vIndex)
+</code></pre><p><strong>for p = 0.07</strong></p>
+<pre><code>%for p = <span class="hljs-number">0.07</span>
+p = <span class="hljs-number">0.07</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+disp(vIndex)
+</code></pre><p><strong>for p = 0.1</strong></p>
+<pre><code>%for p = <span class="hljs-number">0.1</span>
+p = <span class="hljs-number">0.1</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+disp(vIndex)
+</code></pre><h2 id="2e-">2e)</h2>
+<p><strong>for p = 0.01</strong></p>
+<pre><code>%for = <span class="hljs-number">0.01</span>
+p = <span class="hljs-number">0.01</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+no_of_optimal_groups_of_size64 = floor(<span class="hljs-number">10000</span>/<span class="hljs-number">64</span>);
+disp(no_of_optimal_groups_of_size64 * Expected_Bn(<span class="hljs-number">64</span>) + Expected_Bn(<span class="hljs-number">10000</span> - no_of_optimal_groups_of_size64* <span class="hljs-number">64</span>))
+</code></pre><p><strong>for p =0.04</strong></p>
+<pre><code>
+%for p = <span class="hljs-number">0.04</span>
+p = <span class="hljs-number">0.04</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+no_of_optimal_groups_of_size16 = floor(<span class="hljs-number">10000</span>/<span class="hljs-number">16</span>);
+disp(no_of_optimal_groups_of_size16 * Expected_Bn(<span class="hljs-number">16</span>))
+</code></pre><p><strong>for p =0.07</strong></p>
+<pre><code>%for p = <span class="hljs-number">0.07</span>
+p = <span class="hljs-number">0.07</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+no_of_optimal_groups_of_size8 = floor(<span class="hljs-number">10000</span>/<span class="hljs-number">8</span>);
+disp(no_of_optimal_groups_of_size8 * Expected_Bn(<span class="hljs-number">8</span>))
+</code></pre><p><strong>for p = .1</strong></p>
+<pre><code>%for = <span class="hljs-number">0.1</span>
+p = <span class="hljs-number">0.1</span>;
+Expected_Bn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Cn = zeros (<span class="hljs-number">1</span>, <span class="hljs-number">1000000000</span>);  
+Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">1</span>+<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>;
+denom_Expected_Cn = <span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^ <span class="hljs-number">2</span>;
+Expected_Cn(<span class="hljs-number">2</span>) = (<span class="hljs-number">3</span>*p - p.^<span class="hljs-number">2</span>)/ (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^<span class="hljs-number">2</span>);
+n_div_Expected_Bn(<span class="hljs-number">2</span>) = <span class="hljs-number">2</span>/ Expected_Bn(<span class="hljs-number">2</span>);
+
+n= <span class="hljs-number">4</span>;
+while n &lt; <span class="hljs-number">1000000000</span>
+    probfirstpos = (<span class="hljs-number">1</span> - (<span class="hljs-number">1</span>-p).^(n/<span class="hljs-number">2</span>)) / (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n);
+    Expected_Cn(n) = <span class="hljs-number">1</span>+ probfirstpos * (Expected_Bn(n/<span class="hljs-number">2</span>)) + Expected_Cn (n/<span class="hljs-number">2</span>);
+    Expected_Bn(n) = (<span class="hljs-number">1</span>- (<span class="hljs-number">1</span>-p).^n )* ( <span class="hljs-number">1</span>+ Expected_Cn(n)) + (<span class="hljs-number">1</span>-p).^n;
+    n_div_Expected_Bn(n) = n/ Expected_Bn(n) ;
+    n=n*<span class="hljs-number">2</span>;
+end
+
+[mValue , vIndex] = max(n_div_Expected_Bn);
+no_of_optimal_groups_of_size8 = floor(<span class="hljs-number">10000</span>/<span class="hljs-number">8</span>);
+disp(no_of_optimal_groups_of_size8 * Expected_Bn(<span class="hljs-number">8</span>))
+</code></pre>
