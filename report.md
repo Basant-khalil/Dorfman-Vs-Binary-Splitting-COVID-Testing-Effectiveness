@@ -20,7 +20,7 @@ E[Dn] = P(D|A) * P(A) + P(D| A<sup>c</sup>) * P(A<sup>c</sup>), by total expecte
 
 E[Dn] and p relationship:
 Q1-a figure 1  
-<img src="images/1.a-1.png"  width="400" height="280">  
+<img src="1.a-1.png"  width="400" height="280">  
 As p increases, E[Dn] increases greatly. This is because as p increases, the chance of being negative decrease and the chance of having everyone in one group to be not infected decreases. Thus taking longer to test out all the infected people.
 
 E[Dn] and n relationship:
