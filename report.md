@@ -25,21 +25,21 @@ As p increases, E[Dn] increases greatly. This is because as p increases, the cha
 
 E[Dn] and n relationship:
 Q1-a figure 2  
-<img src="images/1.a-2.png"  width="400" height="280">  
+<img src="1.a-2.png"  width="400" height="280">  
 As n increases, E[Dn] also increases. This is because as n increases, the chance of having everyone in one group to be not infected decreases. Thus taking longer to test out all the infected people.
 
 ## 1b)
 How infection rate p affects the optimal group size n∗: Q1-b figure 1  
-<img src="images/1.b-1.png"  width="400" height="280">  
+<img src="1.b-1.png"  width="400" height="280">  
 As p increases, n* decreases. This is because as p increases, the probability of a group of n people being all not infected decrease. So the benefits of Dorfman testing decrease, and max of the expected number of persons cleared per test under the Dorfman testing strategy with a group size n, n*, decrease.
 
 ## 1c)
 Plot: The average number (averaged over 1000 independent runs of the experiment) of tests needed to clear the entire population as a function of p: Q1-c figure 1  
-<img src="images/1.c-1.png"  width="400" height="280">  
+<img src="1.c-1.png"  width="400" height="280">  
 As p increases, the average number of tests needed to clear all people with Dorfman testing increases, so the reduction of test becomes less.
 
 Plot: The ratio of the number of tests needed under the Dorfman testing strategy over that required by the individual testing strategy as a function of p: Q1-c figure 2  
-<img src="images/1.c-2.png"  width="400" height="280">  
+<img src="1.c-2.png"  width="400" height="280">  
 In addition to the fact that an increase in p weakens the reduction of test for Dorfman. Since the individual testing strategy always needed n tests to clear out n people, for population N = 10000, it always need 10000 test, p has no effect on the efficiency of individual testing. Therefore the ratio between Dorfman and individual testing is just Dorfman/10000, and the pattern or shape of the graph does not change.  
 In conclusion, the as the infection rate p increase, reduction in tests of the Dorfman strategy over the individual testing strategy decrease.
 
