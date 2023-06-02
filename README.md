@@ -6,7 +6,7 @@ The goal is to provide a comparative analysis of these approaches in terms of th
 
 ### Key Features:
 
-**1. Dorfman Testing: ** This approach involves pooling samples from multiple individuals and conducting a single test on the pooled sample using probability-based algorithms in Python. If the test result is negative, it implies that all individuals within the pool are COVID-free. However, if the result is positive, further individual testing is required to identify the infected individual(s) within the pool.
+**1. Dorfman Testing:** This approach involves pooling samples from multiple individuals and conducting a single test on the pooled sample using probability-based algorithms in Python. If the test result is negative, it implies that all individuals within the pool are COVID-free. However, if the result is positive, further individual testing is required to identify the infected individual(s) within the pool.
 
-**2. Binary Splitting Testing: **
+**2. Binary Splitting Testing:**
 In this method, the sample population is divided into smaller subgroups, and individual tests are performed on each subgroup using probability-based algorithms implemented in Python. This process is repeated iteratively until all infected individuals are identified. The main advantage of this approach is its ability to narrow down the infected population rapidly.
