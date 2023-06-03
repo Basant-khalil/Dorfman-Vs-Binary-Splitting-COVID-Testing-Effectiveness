@@ -2,9 +2,6 @@
 # Group Testing for COVID-19 Screening
 
 
-### Student: Basant Khalil (bak94), Emerald Liu (sl2322)
-
-
 ## Part I: Dorfman Testing Strategy
 Note: see appendix for code
 
